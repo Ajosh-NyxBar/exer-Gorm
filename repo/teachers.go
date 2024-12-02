@@ -2,7 +2,7 @@ package repo
 
 import (
 	"a21hc3NpZ25tZW50/model"
-
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +20,7 @@ func (t TeacherRepo) Save(data model.Teacher) error {
 
 func (t TeacherRepo) Query() ([]model.Teacher, error) {
 	var teachers []model.Teacher
-	err := t.db.Select("*").Find(&teachers).Error
+	err := t.db.Unscoped().Find(&teachers).Error
 	return teachers, err
 }
 
@@ -29,15 +29,9 @@ func (t TeacherRepo) Update(id uint, name string) error {
 }
 
 func (t TeacherRepo) Delete(id uint) error {
-	var teacher model.Teacher
-	err := t.db.First(&teacher, id).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil 
-		}
-		return err
+	teacher := model.Teacher{}
+	if result := t.db.Where("id=?",id).Delete(&teacher);result.Error != nil{
+		return fmt.Errorf("Error DELETE TEACHER")
 	}
-
-	return t.db.Delete(&model.Teacher{}, id).Error
+	return nil
 }
-
